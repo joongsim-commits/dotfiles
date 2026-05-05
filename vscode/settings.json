@@ -1,0 +1,6 @@
+{
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.bracketPairColorization.enabled": true
+}
