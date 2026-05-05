@@ -11,21 +11,31 @@ log() { echo "[dotfiles] $*"; }
 # Add symlinked skill names to .ona/skills/.gitignore to prevent git noise.
 
 install_skills() {
-    # Find the workspace root via git
-    local workspace_root
     # Find the workspace root. During environment startup this script runs
     # from ~/dotfiles, so "git rev-parse" would resolve to the dotfiles repo
-    # itself. Instead, look for the first git repo under /workspaces.
-    local workspace_root=""
+    # itself. Instead, look for git repos under /workspaces, skipping the
+    # dotfiles repo. Installs skills into ALL workspace repos found.
+    local repos=()
     for dir in /workspaces/*/; do
-        if [[ -d "${dir}.git" ]]; then
-            workspace_root="${dir%/}"
-            break
-        fi
+        [[ -d "${dir}.git" ]] || continue
+        # Skip if this is the dotfiles repo itself
+        [[ "$(cd "$dir" && git remote get-url origin 2>/dev/null)" == *"/dotfiles"* ]] && continue
+        repos+=("${dir%/}")
     done
-        log "No git repo found under /workspaces — skipping skill installation"
+
+    if [[ ${#repos[@]} -eq 0 ]]; then
+        log "No git repos found under /workspaces — skipping skill installation"
         return
     fi
+
+    for workspace_root in "${repos[@]}"; do
+        log "Installing skills into $workspace_root"
+        _install_skills_into "$workspace_root"
+    done
+}
+
+_install_skills_into() {
+    local workspace_root="$1"
 
     local skills_src="$DOTFILES_DIR/skills"
     local skills_dst="$workspace_root/.ona/skills"
