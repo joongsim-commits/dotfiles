@@ -13,10 +13,17 @@ log() { echo "[dotfiles] $*"; }
 install_skills() {
     # Find the workspace root via git
     local workspace_root
-    workspace_root="$(git rev-parse --show-toplevel 2>/dev/null)" || true
-
-    if [[ -z "$workspace_root" ]]; then
-        log "No git repo found — skipping skill installation"
+    # Find the workspace root. During environment startup this script runs
+    # from ~/dotfiles, so "git rev-parse" would resolve to the dotfiles repo
+    # itself. Instead, look for the first git repo under /workspaces.
+    local workspace_root=""
+    for dir in /workspaces/*/; do
+        if [[ -d "${dir}.git" ]]; then
+            workspace_root="${dir%/}"
+            break
+        fi
+    done
+        log "No git repo found under /workspaces — skipping skill installation"
         return
     fi
 
