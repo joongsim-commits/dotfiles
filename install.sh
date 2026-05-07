@@ -64,7 +64,7 @@ install_skills() {
 _install_skills_into() {
     local workspace_root="$1"
 
-    local skills_src="$DOTFILES_DIR/skills"
+    local skills_src="$DOTFILES_DIR/.ona/skills"
     local skills_dst="$workspace_root/.ona/skills"
 
     if [[ ! -d "$skills_src" ]]; then
