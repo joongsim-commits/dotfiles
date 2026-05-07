@@ -5,6 +5,33 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log() { echo "[dotfiles] $*"; }
 
+# --- Wait for workspace repo ---
+# Dotfiles install.sh can run before the target repo finishes cloning.
+# Poll until at least one non-dotfiles git repo appears under /workspaces/.
+
+wait_for_workspace_repo() {
+    local timeout=120  # seconds
+    local interval=2
+    local elapsed=0
+
+    while (( elapsed < timeout )); do
+        for dir in /workspaces/*/; do
+            [[ -d "${dir}.git" ]] || continue
+            # Skip the dotfiles repo itself
+            local origin
+            origin="$(cd "$dir" && git remote get-url origin 2>/dev/null)" || true
+            [[ "$origin" == *"/dotfiles"* ]] && continue
+            log "Found workspace repo: $dir"
+            return 0
+        done
+        sleep "$interval"
+        elapsed=$(( elapsed + interval ))
+    done
+
+    log "Timed out after ${timeout}s waiting for a workspace repo to appear"
+    return 1
+}
+
 # --- Skills ---
 # Symlink each skill into the workspace's .ona/skills/ directory.
 # Skip skills that already exist (repo-level takes precedence).
@@ -214,10 +241,17 @@ install_agents_md() {
 
 log "Installing dotfiles from $DOTFILES_DIR"
 
-install_skills
-install_agents_md
+# Shell, git, and vscode config don't depend on workspace repos — install first.
 install_shell
 install_git
 install_vscode
+
+# Skills and AGENTS.md target workspace repos that may still be cloning.
+if wait_for_workspace_repo; then
+    install_skills
+    install_agents_md
+else
+    log "No workspace repos found — skipping skills and AGENTS.md installation"
+fi
 
 log "Done"
