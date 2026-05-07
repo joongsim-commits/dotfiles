@@ -21,12 +21,7 @@ Guide completion of development work by presenting clear options and handling th
 
 ### Step 1: Verify Tests
 
-**Before presenting options, verify tests pass via `exec`:**
-
-```bash
-# Run project's test suite
-npm test / cargo test / pytest / go test ./...
-```
+**MANDATORY:** Load `read_skill("superpowers-verification-before-completion")` and follow it. Run the project's test suite via `exec`, read the full output, and confirm all tests pass with evidence. Do not proceed to Step 2 until you have verification evidence.
 
 **If tests fail:**
 ```
@@ -35,8 +30,6 @@ Tests failing (<N> failures). Must fix before completing:
 Cannot proceed with merge/PR until tests pass.
 ```
 Stop. Don't proceed to Step 2.
-
-**If tests pass:** Continue to Step 2.
 
 ### Step 2: Determine Base Branch
 
