@@ -181,11 +181,41 @@ install_vscode() {
     log "Symlinked VS Code settings"
 }
 
+# --- AGENTS.md ---
+# Symlink AGENTS.md into each workspace repo so the superpowers bootstrap
+# is loaded automatically. Skip repos that already have their own AGENTS.md.
+
+install_agents_md() {
+    local src="$DOTFILES_DIR/AGENTS.md"
+
+    if [[ ! -f "$src" ]]; then
+        log "No AGENTS.md in dotfiles — skipping"
+        return
+    fi
+
+    for dir in /workspaces/*/; do
+        [[ -d "${dir}.git" ]] || continue
+        [[ "$(cd "$dir" && git remote get-url origin 2>/dev/null)" == *"/dotfiles"* ]] && continue
+
+        local dst="${dir}AGENTS.md"
+
+        # Skip if AGENTS.md exists and is NOT a symlink we created
+        if [[ -e "$dst" && ! -L "$dst" ]]; then
+            log "AGENTS.md exists in $(basename "$dir") — skipping"
+            continue
+        fi
+
+        ln -sfn "$src" "$dst"
+        log "Symlinked AGENTS.md into $(basename "$dir")"
+    done
+}
+
 # --- Main ---
 
 log "Installing dotfiles from $DOTFILES_DIR"
 
 install_skills
+install_agents_md
 install_shell
 install_git
 install_vscode
