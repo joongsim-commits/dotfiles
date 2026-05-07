@@ -23,7 +23,7 @@ You MUST create a todo via `todo_write` for each of these items and complete the
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Ask clarifying questions** — one at a time via `ask_clarifying_questions` (always include an "Other" choice for open-ended responses), understand purpose/constraints/success criteria
-3. **Propose 2-3 approaches** — with trade-offs and your recommendation
+3. **Propose 2-3 approaches** — with trade-offs and your recommendation. Present this in the main response rather than in the tool call.
 4. **Present design** — in sections scaled to their complexity, get user approval after each section
 5. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
 6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
