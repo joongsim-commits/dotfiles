@@ -117,7 +117,7 @@ You MUST complete each phase before proceeding to the next.
 
 **Fix the root cause, not the symptom:**
 
-1. **Create Failing Test Case** — Use `read_skill("superpowers-test-driven-development")` for writing proper failing tests
+1. **Create Failing Test Case** — **MANDATORY:** Load `read_skill("superpowers-test-driven-development")` and follow the RED-GREEN-REFACTOR cycle. Write a test that reproduces the bug, verify it fails, then fix.
 2. **Implement Single Fix** — Address the root cause. ONE change at a time. No "while I'm here" improvements.
 3. **Verify Fix** — Test passes? No other tests broken? Issue actually resolved?
 4. **If Fix Doesn't Work** — STOP. Count: How many fixes have you tried?
