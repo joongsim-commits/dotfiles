@@ -25,6 +25,12 @@ Execute a plan by dispatching a fresh sub-agent per task, with two-stage review 
 
 **vs. Executing Plans:** This skill uses sub-agents for isolation and review. `superpowers-executing-plans` executes inline with human checkpoints.
 
+## Before Starting
+
+**MANDATORY:** Before executing any tasks, ensure you are on an isolated branch:
+- Load `read_skill("superpowers-using-git-worktrees")` and follow it
+- Only proceed once you have a feature branch with a verified clean baseline
+
 ## The Process
 
 1. Read plan, extract all tasks with full text, note context, create `todo_write` checklist
@@ -38,7 +44,8 @@ Execute a plan by dispatching a fresh sub-agent per task, with two-stage review 
    g. If quality issues found → implementer fixes, re-review
    h. Mark task complete in `todo_write`
 3. After all tasks: dispatch final code reviewer for entire implementation
-4. Load `read_skill("superpowers-finishing-a-development-branch")`
+4. **MANDATORY:** Load `read_skill("superpowers-verification-before-completion")` — verify all tests pass with evidence before claiming completion
+5. Load `read_skill("superpowers-finishing-a-development-branch")` to present completion options
 
 ## Sub-Agent Dispatch Pattern
 
