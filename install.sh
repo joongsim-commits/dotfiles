@@ -208,6 +208,26 @@ install_vscode() {
     log "Symlinked VS Code settings"
 }
 
+# --- Claude Code ---
+# Install superpowers plugin for Claude Code.
+
+install_claude_code() {
+    if ! command -v claude >/dev/null 2>&1; then
+        log "claude not found — skipping Claude Code plugin install"
+        return
+    fi
+
+    # Check if already installed
+    if claude plugin list 2>/dev/null | grep -q "superpowers"; then
+        log "Claude Code superpowers plugin already installed"
+        return
+    fi
+
+    claude plugin install superpowers@claude-plugins-official --scope user 2>/dev/null && \
+        log "Installed Claude Code superpowers plugin" || \
+        log "Could not install Claude Code superpowers plugin"
+}
+
 # --- AGENTS.md ---
 # Symlink AGENTS.md into each workspace repo so the superpowers bootstrap
 # is loaded automatically. Skip repos that already have their own AGENTS.md.
@@ -245,6 +265,7 @@ log "Installing dotfiles from $DOTFILES_DIR"
 install_shell
 install_git
 install_vscode
+install_claude_code
 
 # Skills and AGENTS.md target workspace repos that may still be cloning.
 if wait_for_workspace_repo; then
