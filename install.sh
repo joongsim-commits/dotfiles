@@ -223,14 +223,14 @@ install_claude_code() {
         return
     fi
 
-    # Register the superpowers marketplace if not already present
-    if ! claude plugin marketplace list 2>/dev/null | grep -q "superpowers-marketplace"; then
-        claude plugin marketplace add obra/superpowers-marketplace 2>/dev/null && \
-            log "Added superpowers marketplace" || \
-            { log "Could not add superpowers marketplace"; return; }
+    # Register the official Claude plugin marketplace if not already present
+    if ! claude plugin marketplace list 2>/dev/null | grep -q "claude-plugins-official"; then
+        claude plugin marketplace add anthropics/claude-plugins-official 2>/dev/null && \
+            log "Added claude-plugins-official marketplace" || \
+            { log "Could not add claude-plugins-official marketplace"; return; }
     fi
 
-    claude plugin install superpowers@superpowers-marketplace --scope user 2>/dev/null && \
+    claude plugin install superpowers@claude-plugins-official --scope user 2>/dev/null && \
         log "Installed Claude Code superpowers plugin" || \
         log "Could not install Claude Code superpowers plugin"
 }
