@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Tee all output to a log file so we can inspect after startup, since Ona
+# doesn't surface install.sh stdout/stderr in the UI.
+exec > >(tee -a /tmp/dotfiles-install.log) 2>&1
+
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 log() { echo "[dotfiles] $*"; }
