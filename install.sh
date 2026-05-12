@@ -210,6 +210,33 @@ install_vscode() {
 
 # --- Claude Code ---
 # Install superpowers plugin for Claude Code.
+#
+# Race condition: The Ona platform writes Claude's settings.json (proxy/auth
+# config) during environment startup. If we install a plugin before that write
+# happens, the platform's write can clobber the enabledPlugins entry, leaving
+# the plugin installed but disabled. We wait for Claude initialization to
+# complete before installing, and explicitly enable the plugin afterward.
+
+wait_for_claude_init() {
+    local timeout=120
+    local interval=2
+    local elapsed=0
+    local settings="$HOME/.claude/settings.json"
+
+    while (( elapsed < timeout )); do
+        # The platform injects ANTHROPIC_BASE_URL into settings.json when
+        # Claude Code is fully initialized.
+        if [[ -f "$settings" ]] && grep -q "ANTHROPIC_BASE_URL" "$settings" 2>/dev/null; then
+            log "Claude Code initialized (settings.json ready)"
+            return 0
+        fi
+        sleep "$interval"
+        elapsed=$(( elapsed + interval ))
+    done
+
+    log "Timed out after ${timeout}s waiting for Claude Code initialization"
+    return 1
+}
 
 install_claude_code() {
     if ! command -v claude >/dev/null 2>&1; then
@@ -217,9 +244,15 @@ install_claude_code() {
         return
     fi
 
-    # Check if already installed
-    if claude plugin list 2>/dev/null | grep -q "superpowers"; then
-        log "Claude Code superpowers plugin already installed"
+    # Wait for the platform to finish writing Claude's settings.json so our
+    # plugin enable state doesn't get clobbered.
+    if ! wait_for_claude_init; then
+        log "Proceeding with plugin install despite init timeout"
+    fi
+
+    # Check if already installed and enabled
+    if claude plugin list --json 2>/dev/null | grep -q '"enabled": true'; then
+        log "Claude Code superpowers plugin already installed and enabled"
         return
     fi
 
@@ -230,9 +263,24 @@ install_claude_code() {
             { log "Could not add claude-plugins-official marketplace"; return; }
     fi
 
-    claude plugin install superpowers@claude-plugins-official --scope user 2>/dev/null && \
-        log "Installed Claude Code superpowers plugin" || \
-        log "Could not install Claude Code superpowers plugin"
+    # Install if not already present
+    if ! claude plugin list 2>/dev/null | grep -q "superpowers"; then
+        claude plugin install superpowers@claude-plugins-official --scope user 2>/dev/null && \
+            log "Installed Claude Code superpowers plugin" || \
+            { log "Could not install Claude Code superpowers plugin"; return; }
+    fi
+
+    # Explicitly enable — guards against the race where install succeeded but
+    # the platform overwrote settings.json before we got here.
+    # Note: `claude plugin enable` exits non-zero if already enabled, so we
+    # check the current state afterward instead of relying on the exit code.
+    claude plugin enable superpowers@claude-plugins-official 2>/dev/null || true
+
+    if claude plugin list --json 2>/dev/null | grep -q '"enabled": true'; then
+        log "Claude Code superpowers plugin is enabled"
+    else
+        log "Claude Code superpowers plugin could not be enabled"
+    fi
 }
 
 # --- AGENTS.md ---
